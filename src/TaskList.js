@@ -31,12 +31,7 @@ function Task({ task, onChange, onDelete }) {
       <BsCheckLg
         title="Completed?"
         className=" check-icon"
-        onClick={(e) => {
-          onChange({
-            ...task,
-            done: e.target.checked,
-          });
-        }}
+        onClick={() => onChange({ ...task, done: !task.done })}
       />
     </>
   );

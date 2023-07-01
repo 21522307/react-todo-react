@@ -1,4 +1,4 @@
-import { useReducer } from "react";
+import { useReducer, useState } from "react";
 import AddTask from "./AddTask.js";
 import TaskList from "./TaskList.js";
 import "./App.css";
@@ -22,16 +22,19 @@ function tasksReducer(tasks, action) {
       return newTasks;
     }
     case "changed": {
-      return tasks.map((t) => {
-        if (t.id === action.task.id) {
-          return action.task;
-        } else {
-          return t;
-        }
-      });
+      let newTasks = [...tasks];
+
+      newTasks[newTasks.findIndex((t) => t.id === action.task.id)] =
+        action.task;
+      return newTasks;
     }
     case "deleted": {
-      return tasks.filter((t) => t.id !== action.id);
+      let newTasks = [...tasks];
+      newTasks.splice(
+        tasks.findIndex((t) => t.id === action.id),
+        1
+      );
+      return newTasks;
     }
     default: {
       throw Error("Unknown action: " + action.type);
@@ -41,10 +44,11 @@ function tasksReducer(tasks, action) {
 
 export default function TaskApp() {
   const [tasks, dispatch] = useReducer(tasksReducer, initialTasks);
+  const [filter, setFilter] = useState("all");
 
   function handleAddTask(task) {
     dispatch({
-      id: ++nextId,
+      id: nextId++,
       type: "added",
       title: task.title,
       description: task.description,
@@ -64,6 +68,22 @@ export default function TaskApp() {
       id: taskId,
     });
   }
+
+  function handleFilterChange(filter) {
+    setFilter(filter);
+  }
+
+  // Lọc các nhiệm vụ theo trạng thái đã chọn
+  const filteredTasks = tasks.filter((task) => {
+    if (filter === "todo") {
+      return !task.done;
+    } else if (filter === "completed") {
+      return task.done;
+    } else {
+      return true;
+    }
+  });
+
   return (
     <div className="App">
       <h1>My Todos</h1>
@@ -72,12 +92,30 @@ export default function TaskApp() {
         <AddTask onAddTask={handleAddTask} />
 
         <div className="btn-area">
-          <button className="secondary-btn active">To Do</button>
-          <button className="secondary-btn">Completed</button>
+          <button
+            className={`secondary-btn ${filter === "all" ? "active" : ""}`}
+            onClick={() => handleFilterChange("all")}
+          >
+            All
+          </button>
+          <button
+            className={`secondary-btn ${filter === "todo" ? "active" : ""}`}
+            onClick={() => handleFilterChange("todo")}
+          >
+            To Do
+          </button>
+          <button
+            className={`secondary-btn ${
+              filter === "completed" ? "active" : ""
+            }`}
+            onClick={() => handleFilterChange("completed")}
+          >
+            Completed
+          </button>
         </div>
 
         <TaskList
-          tasks={tasks}
+          tasks={filteredTasks} // Sử dụng danh sách đã lọc
           onChangeTask={handleChangeTask}
           onDeleteTask={handleDeleteTask}
         />
