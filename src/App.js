@@ -1,10 +1,10 @@
-import { useReducer, useState } from "react";
+import { useReducer, useState, useEffect } from "react";
 import AddTask from "./AddTask.js";
 import TaskList from "./TaskList.js";
 import "./App.css";
 
 let nextId = 0;
-const initialTasks = [];
+const initialTasks = loadTasksFromLocalStorage() || [];
 
 function tasksReducer(tasks, action) {
   switch (action.type) {
@@ -18,7 +18,7 @@ function tasksReducer(tasks, action) {
           done: false,
         },
       ];
-
+      saveTasksToLocalStorage(newTasks);
       return newTasks;
     }
     case "changed": {
@@ -26,6 +26,7 @@ function tasksReducer(tasks, action) {
 
       newTasks[newTasks.findIndex((t) => t.id === action.task.id)] =
         action.task;
+      saveTasksToLocalStorage(newTasks);
       return newTasks;
     }
     case "deleted": {
@@ -34,6 +35,7 @@ function tasksReducer(tasks, action) {
         tasks.findIndex((t) => t.id === action.id),
         1
       );
+      saveTasksToLocalStorage(newTasks);
       return newTasks;
     }
     default: {
@@ -42,9 +44,23 @@ function tasksReducer(tasks, action) {
   }
 }
 
+function loadTasksFromLocalStorage() {
+  const tasksString = localStorage.getItem("tasks");
+  return JSON.parse(tasksString);
+}
+
+function saveTasksToLocalStorage(tasks) {
+  const tasksString = JSON.stringify(tasks);
+  localStorage.setItem("tasks", tasksString);
+}
+
 export default function TaskApp() {
   const [tasks, dispatch] = useReducer(tasksReducer, initialTasks);
   const [filter, setFilter] = useState("all");
+
+  useEffect(() => {
+    saveTasksToLocalStorage(tasks);
+  }, [tasks]);
 
   function handleAddTask(task) {
     dispatch({
@@ -115,7 +131,7 @@ export default function TaskApp() {
         </div>
 
         <TaskList
-          tasks={filteredTasks} // Sử dụng danh sách đã lọc
+          tasks={filteredTasks}
           onChangeTask={handleChangeTask}
           onDeleteTask={handleDeleteTask}
         />

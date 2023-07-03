@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { AiOutlineDelete, AiOutlineEdit, AiOutlineSave } from "react-icons/ai";
-import { BsCheckLg } from "react-icons/bs";
+import { BsCheckLg, BsCheck2Circle } from "react-icons/bs";
 
 export default function TaskList({ tasks, onChangeTask, onDeleteTask }) {
   return (
@@ -21,20 +21,7 @@ export default function TaskList({ tasks, onChangeTask, onDeleteTask }) {
 
 function Task({ task, onChange, onDelete }) {
   const [isEditing, setIsEditing] = useState(false);
-  const btnComponent = (
-    <>
-      <AiOutlineDelete
-        title="Delete?"
-        className="delete-icon"
-        onClick={() => onDelete(task.id)}
-      />
-      <BsCheckLg
-        title="Completed?"
-        className=" check-icon"
-        onClick={() => onChange({ ...task, done: !task.done })}
-      />
-    </>
-  );
+
   let taskContent;
   if (isEditing) {
     taskContent = (
@@ -65,7 +52,11 @@ function Task({ task, onChange, onDelete }) {
             className="edit-icon"
             onClick={() => setIsEditing(false)}
           />
-          {btnComponent}
+          <AiOutlineDelete
+            title="Delete?"
+            className="delete-icon"
+            onClick={() => onDelete(task.id)}
+          />
         </div>
       </>
     );
@@ -77,12 +68,35 @@ function Task({ task, onChange, onDelete }) {
           <p>{task.description}</p>
         </div>
         <div>
-          <AiOutlineEdit
-            title="Edit?"
-            className="edit-icon"
-            onClick={() => setIsEditing(true)}
+          <AiOutlineDelete
+            title="Delete?"
+            className="delete-icon"
+            onClick={() => onDelete(task.id)}
           />
-          {btnComponent}
+          {task.done ? (
+            <BsCheck2Circle
+              title="UnCompleted?"
+              className=" check-icon"
+              onClick={() => {
+                onChange({ ...task, done: !task.done });
+              }}
+            />
+          ) : (
+            <>
+              <AiOutlineEdit
+                title="Edit?"
+                className="edit-icon"
+                onClick={() => setIsEditing(true)}
+              />
+              <BsCheckLg
+                title="Completed?"
+                className=" check-icon"
+                onClick={() => {
+                  onChange({ ...task, done: !task.done });
+                }}
+              />
+            </>
+          )}
         </div>
       </>
     );
